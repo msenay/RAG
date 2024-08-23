@@ -7,6 +7,7 @@ BASE_URL = "http://localhost:8001"
 # PDF URL to be uploaded and processed
 PDF_URL = "https://s29.q4cdn.com/175625835/files/doc_downloads/test.pdf"
 
+
 # Upload the document
 def upload_document(pdf_url):
     upload_endpoint = f"{BASE_URL}/upload/"
@@ -14,10 +15,11 @@ def upload_document(pdf_url):
     if response.status_code == 200:
         data = response.json()
         print(f"Document uploaded successfully: {data}")
-        return data['document_id']
+        return data["document_id"]
     else:
         print(f"Failed to upload document: {response.text}")
         return None
+
 
 # Perform a query on the uploaded document
 def question_answer(document_url, query):
@@ -28,6 +30,7 @@ def question_answer(document_url, query):
         print(f"Query results: {data['relevant_chunks']}")
     else:
         print(f"Failed to perform query: {response.text}")
+
 
 if __name__ == "__main__":
     # Upload the document and get the document ID

@@ -6,8 +6,7 @@ from fastapi.encoders import jsonable_encoder
 from app.database.session import get_db
 from app.database import crud
 from app.huggingface.manager import ModelManager
-from app.models.document import DocumentStatusEnum, DocumentEventsEnum, UploadDocumentResponse, QAResponse, QARequest, \
-    UploadDocumentRequest
+from app.models.document import DocumentStatusEnum, DocumentEventsEnum, UploadDocumentResponse, QAResponse, QARequest, UploadDocumentRequest
 from app.settings import settings
 from app.tasks.document import move_document_forward
 import os
@@ -28,24 +27,13 @@ def pad_or_truncate_vector(vector, target_length):
     if len(vector) > target_length:
         return vector[:target_length]
     elif len(vector) < target_length:
-        return np.pad(vector, (0, target_length - len(vector)), 'constant')
+        return np.pad(vector, (0, target_length - len(vector)), "constant")
     return vector
 
 
 @router.post("/upload/", response_model=UploadDocumentResponse)
-async def upload_document(
-        request: UploadDocumentRequest,
-        db_session: Session = Depends(get_db)
-) -> JSONResponse:
-    """Endpoint for uploading a document from a URL and processing it.
-
-    Args:
-        request (UploadDocumentRequest): The URL of the PDF to be uploaded and processed.
-        db_session (Session): Database session.
-
-    Returns:
-        JSONResponse: Response containing the document ID and status.
-    """
+async def upload_document(request: UploadDocumentRequest, db_session: Session = Depends(get_db)) -> JSONResponse:
+    """Endpoint for uploading a document from a URL and processing it."""
 
     # Fetch and save the file locally from the URL
     os.makedirs(settings.pdfs_data_dir, exist_ok=True)
@@ -71,17 +59,14 @@ async def upload_document(
     # Retrieve the updated document information
     document = crud.get_document(db_session, document_id)
     if document:
-        response = UploadDocumentResponse(document_id=document_id, status=document.status)
-        return JSONResponse(content=jsonable_encoder(response), status_code=200)
+        upload_response = UploadDocumentResponse(document_id=document_id, status=document.status)
+        return JSONResponse(content=jsonable_encoder(upload_response), status_code=200)
     else:
         raise HTTPException(status_code=400, detail="Unable to upload and process the document.")
 
 
 @router.post("/qa/", response_model=QAResponse)
-async def question_answer(
-        request: QARequest,
-        db_session: Session = Depends(get_db)
-) -> JSONResponse:
+async def question_answer(request: QARequest, db_session: Session = Depends(get_db)) -> JSONResponse:
     """Endpoint for answering a query based on the processed document."""
 
     # Retrieve the document based on URL (assuming the document was already processed)

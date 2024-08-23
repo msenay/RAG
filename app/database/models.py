@@ -16,7 +16,7 @@ class Document(Base):
 class ChunkEmbedding(Base):
     __tablename__ = "chunk_embeddings"
     id = Column(Integer, primary_key=True, autoincrement=True)
-    document_id = Column(Integer, ForeignKey('documents.id'), nullable=False)
+    document_id = Column(Integer, ForeignKey("documents.id"), nullable=False)
     text = Column(Text, nullable=False)
     vector = Column(Vector(), nullable=False)
     document = relationship("Document", back_populates="chunks")

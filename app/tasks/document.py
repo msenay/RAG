@@ -1,7 +1,6 @@
 import logging
 import os
 from itertools import chain
-
 from PyPDF2 import PdfReader
 from types import MappingProxyType
 from app.database import crud
@@ -19,24 +18,26 @@ embedding_model = model_manager.get_model()
 
 def document_state_mapping() -> MappingProxyType:
     """Mapping of document states to corresponding status-event pairs."""
-    return MappingProxyType({
-        DocumentStatusEnum.ADDED.value: {
-            DocumentEventsEnum.LOAD_REQUEST.value: download_and_chunk_document,
-            DocumentEventsEnum.DELETE_REQUEST.value: delete_document,
-        },
-        DocumentStatusEnum.LOAD.value: {
-            DocumentEventsEnum.LOAD_FINISHED.value: mark_as_indexed,
-            DocumentEventsEnum.LOAD_FAILED.value: mark_as_failed,
-            DocumentEventsEnum.DELETE_REQUEST.value: delete_document,
-        },
-        DocumentStatusEnum.INDEXED.value: {
-            DocumentEventsEnum.DELETE_REQUEST.value: delete_document,
-        },
-        DocumentStatusEnum.FAILED.value: {
-            DocumentEventsEnum.LOAD_REQUEST.value: download_and_chunk_document,
-            DocumentEventsEnum.DELETE_REQUEST.value: delete_document,
-        },
-    })
+    return MappingProxyType(
+        {
+            DocumentStatusEnum.ADDED: {
+                DocumentEventsEnum.LOAD_REQUEST: download_and_chunk_document,
+                DocumentEventsEnum.DELETE_REQUEST: delete_document,
+            },
+            DocumentStatusEnum.LOAD: {
+                DocumentEventsEnum.LOAD_FINISHED: mark_as_indexed,
+                DocumentEventsEnum.LOAD_FAILED: mark_as_failed,
+                DocumentEventsEnum.DELETE_REQUEST: delete_document,
+            },
+            DocumentStatusEnum.INDEXED: {
+                DocumentEventsEnum.DELETE_REQUEST: delete_document,
+            },
+            DocumentStatusEnum.FAILED: {
+                DocumentEventsEnum.LOAD_REQUEST: download_and_chunk_document,
+                DocumentEventsEnum.DELETE_REQUEST: delete_document,
+            },
+        }
+    )
 
 
 def move_document_forward(document_id: int, event: str, **kwargs) -> None:
@@ -50,8 +51,7 @@ def move_document_forward(document_id: int, event: str, **kwargs) -> None:
             status = document.status
             next_task = document_state_mapping()[status].get(event)
             if next_task:
-                logger.info(
-                    f"Moving document {document_id} from status: {status} on event: {event} to task: {next_task}")
+                logger.info(f"Moving document {document_id} from status: {status} on event: {event} to task: {next_task}")
                 next_task.send(document_id=document_id, **kwargs)
             else:
                 logger.info(f"No action needed for document {document_id} on status: {status} with event: {event}")
@@ -94,7 +94,7 @@ def download_and_chunk_document(document_id: int) -> None:
                             chunk_size = 100
 
                             for i in range(0, len(words), chunk_size):
-                                chunk = " ".join(words[i:i + chunk_size])
+                                chunk = " ".join(words[i : i + chunk_size])
                                 logger.info(f"Processing chunk: {chunk}")
 
                                 try:
@@ -113,22 +113,21 @@ def download_and_chunk_document(document_id: int) -> None:
                                         # Chunk vector if needed
                                         max_dimensions = 16000
                                         for j in range(0, len(flat_vector), max_dimensions):
-                                            vector_chunk = flat_vector[j:j + max_dimensions]
+                                            vector_chunk = flat_vector[j : j + max_dimensions]
                                             logger.info(f"Storing vector chunk of length: {len(vector_chunk)}")
-                                            crud.insert_chunk(db_session, document_id=document_id, chunk=chunk,
-                                                              vector=vector_chunk)
+                                            crud.insert_chunk(db_session, document_id=document_id, chunk=chunk, vector=vector_chunk)
                                 except Exception as e:
                                     logger.error(f"Error generating vector for chunk: {e}")
                                     continue
 
-                    crud.update_document_status(db_session, document_id, DocumentStatusEnum.INDEXED.value)
+                    crud.update_document_status(db_session, document_id, DocumentStatusEnum.INDEXED)
                     logger.info(f"Document {document_id} has been successfully indexed.")
             else:
                 raise FileNotFoundError(f"File not found at path: {file_path}")
 
         except Exception as e:
             logger.error(f"Error occurred while downloading and chunking document: {e}")
-            crud.update_document_status(db_session, document_id, DocumentStatusEnum.FAILED.value)
+            crud.update_document_status(db_session, document_id, DocumentStatusEnum.FAILED)
 
 
 @dramatiq.actor(
@@ -145,7 +144,7 @@ def delete_document(document_id: int) -> None:
             document = crud.get_document(db_session, document_id=document_id)
             if document:
                 crud.delete_document(db_session, document_id=document_id)
-                crud.update_document_status(db_session, document_id, DocumentStatusEnum.DELETED.value)
+                crud.update_document_status(db_session, document_id, DocumentStatusEnum.DELETED)
             else:
                 logger.error(f"Document not found! {document_id=}")
 
@@ -166,7 +165,7 @@ def mark_as_failed(document_id: int) -> None:
     """
     logger.info(f"Marking document as failed - {document_id}")
     with db_context() as db_session:
-        crud.update_document_status(db_session, document_id=document_id, status=DocumentStatusEnum.FAILED.value)
+        crud.update_document_status(db_session, document_id=document_id, status=DocumentStatusEnum.FAILED)
 
 
 @dramatiq.actor(
@@ -182,6 +181,6 @@ def mark_as_indexed(document_id: int) -> None:
     """
     logger.info(f"Marking document as indexed - {document_id}")
     with db_context() as db_session:
-        crud.update_document_status(db_session, document_id, status=DocumentStatusEnum.INDEXED.value)
+        crud.update_document_status(db_session, document_id, status=DocumentStatusEnum.INDEXED)
 
     logger.info(f"Document {document_id} has been successfully indexed.")

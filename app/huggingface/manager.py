@@ -1,5 +1,6 @@
 from transformers import pipeline
 
+
 class ModelManager:
     """
     The ModelManager class is a Singleton class designed to manage and provide access to the embedding model

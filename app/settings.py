@@ -49,6 +49,7 @@ class Settings(BaseSettings):
 
     class Config(object):
         """Config for pydantic base settings."""
+
         env_prefix = "EMB_"
 
 
