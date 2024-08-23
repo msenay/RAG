@@ -1,0 +1,8 @@
+#!/bin/bash
+set -ex
+
+cd $(dirname $0)/..
+
+python -c "from app.huggingface.manager import ModelManager; ModelManager().get_model()"
+
+dramatiq app.tasks.tasks --threads 1 --queues default .

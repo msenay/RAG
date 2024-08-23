@@ -1,0 +1,63 @@
+version: "3.3"
+services:
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: api
+    command: ./bin/run_api
+    ports:
+      - "${API_PORT:-5000}:${API_PORT:-5000}"
+    expose:
+      - "${API_PORT:-5000}"
+    env_file:
+      - .env
+    depends_on:
+      - dramatiq
+      - postgres
+      - redis
+    restart: always
+    volumes:
+      - .:/app
+      - pdfs_data:/data/tmp/pdfs
+
+  dramatiq:
+    container_name: dramatiq
+    build:
+      context: .
+      dockerfile: Dockerfile
+    command: ./bin/run_dramatiq
+    restart: always
+    env_file:
+      - .env
+    volumes:
+      - .:/app
+      - pdfs_data:/data/tmp/pdfs
+    depends_on:
+      - postgres
+      - redis
+
+  redis:
+    image: redis:alpine
+    command: redis-server --loglevel warning
+    restart: always
+    ports:
+      - "${REDIS_PORT:-6379}:${REDIS_PORT:-6379}"
+    volumes:
+      - redis_data:/data
+
+  postgres:
+    container_name: postgres
+    image: pgvector/pgvector:pg16
+    restart: always
+    ports:
+      - "${POSTGRES_PORT:-5432}:${POSTGRES_PORT:-5432}"
+    env_file:
+      - .env
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+
+volumes:
+  pgdata: {}
+  redis_data: {}
+  pdfs_data: {}

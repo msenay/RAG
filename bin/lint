@@ -1,0 +1,13 @@
+#!/bin/bash
+set -ex
+
+cd $(dirname $0)/..
+
+ruff check .
+
+ENVIRONMENT=${ENVIRONMENT:-"NONCI"}
+if [ $ENVIRONMENT != "CI" ]; then
+    ruff format .
+fi
+
+mypy -p app
