@@ -51,8 +51,8 @@ PostgreSQL database set up with pgvector extension enabled
 Steps
 Clone the repository:
 ```bash
-git clone <repository-url>
-cd <repository-directory>
+git clone https://github.com/msenay/RAG.git
+cd RAG
 ```
 Set up the environment variables:
 Create a .env file at the root of your project and add the necessary environment variables, such as database connection details and application settings.
