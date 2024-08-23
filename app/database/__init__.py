@@ -10,9 +10,6 @@ logger = logging.getLogger(__name__)
 
 DB_URL = f"postgresql://{settings.postgres_user}:{settings.postgres_password}@{settings.postgres_host}:{settings.postgres_port}/{settings.postgres_db}"
 
-print(DB_URL)
-logger.info(f"init settings.db_url {DB_URL}")
-
 Base = declarative_base()
 metadata = MetaData()
 engine = create_engine(DB_URL, pool_pre_ping=True)
