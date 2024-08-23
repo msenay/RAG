@@ -69,7 +69,7 @@ docker exec -it <api-container-name> python -m app.database.init_db
 ```
 Usage
 
-Uploading and Processing a PDF
+1) Uploading and Processing a PDF
 Upload a PDF Document:
 Send a POST request to /upload/ with the URL of the PDF document.
 
@@ -101,6 +101,25 @@ Response example:
     ]
 }
 ```
+
+2) Querying a Processed Document:
+Once the document is indexed, you can query it using the /qa/ endpoint to retrieve relevant text chunks based on your query.
+Example:
+
+```bash
+curl -X POST "http://localhost:8001/qa/" -H "Content-Type: application/json" -d '{"url": "http://example.com/sample.pdf", "query": "What is the main topic of the document?"}'
+```
+Response Example:
+```json
+{
+    "relevant_chunks": [
+        "The main topic of the document is...",
+        "Another relevant section is..."
+    ]
+}
+```
+Explanation: The API will take the query, embed it using the same model used for the document chunks, and then compute the similarity between the query and each chunk's embedding. The most relevant chunks are then returned in the response.
+
 Task Workflow
 
 The task processing workflow involves the following steps:
