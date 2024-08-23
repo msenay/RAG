@@ -22,7 +22,7 @@ pgvector: A PostgreSQL extension for vector data, enabling similarity searches.
 Hugging Face Transformers: A state-of-the-art library for natural language processing tasks, including text embeddings.
 Project Structure
 
-
+```bash
 project_root/
 ├── app/
 │   ├── api/
@@ -41,6 +41,8 @@ project_root/
 ├── docker-compose.yml       # Docker Compose setup
 ├── Dockerfile               # Dockerfile for building the API
 └── README.md                # Project documentation
+```
+
 Installation
 
 Prerequisites
@@ -48,17 +50,23 @@ Docker and Docker Compose installed on your machine
 PostgreSQL database set up with pgvector extension enabled
 Steps
 Clone the repository:
+```bash
 git clone <repository-url>
 cd <repository-directory>
+```
 Set up the environment variables:
 Create a .env file at the root of your project and add the necessary environment variables, such as database connection details and application settings.
 Build and run the Docker containers:
+```bash
 docker-compose up --build
+```
 This will start the FastAPI server, the PostgreSQL database, and the Dramatiq worker.
 Initialize the database:
 After the containers are up and running, initialize the database by running the following command inside the API container:
 
+```bash
 docker exec -it <api-container-name> python -m app.database.init_db
+```
 Usage
 
 Uploading and Processing a PDF
@@ -66,8 +74,9 @@ Upload a PDF Document:
 Send a POST request to /upload/ with the URL of the PDF document.
 
 Example:
-
+```bash
 curl -X POST "http://localhost:8001/upload/" -H "Content-Type: application/json" -d '{"url": "http://example.com/sample.pdf"}'
+```
 Processing the Document:
 The document will be processed asynchronously. This includes downloading the PDF, extracting text, generating embeddings for each text chunk, and storing the embeddings in the database.
 Querying a Processed Document
@@ -75,21 +84,23 @@ Once the document is indexed, you can query it using the following endpoint:
 
 POST /qa/
 Request payload:
-
+```json
 {
     "url": "http://example.com/sample.pdf",
     "query": "What is the main topic of the document?"
 }
+```
 The API will return the most relevant text chunks based on the query.
 
 Response example:
-
+```json
 {
     "relevant_chunks": [
         "The main topic of the document is...",
         "Another relevant section is..."
     ]
 }
+```
 Task Workflow
 
 The task processing workflow involves the following steps:
