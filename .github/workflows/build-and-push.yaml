@@ -20,11 +20,13 @@ jobs:
           username: ${{ secrets.AZURE_USERNAME }}
           password: ${{ secrets.AZURE_PASSWORD }}
 
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v2
+
       - name: Build and Push Docker Compose Images
-        uses: docker/compose-build-push-action@v2
+        uses: docker/build-push-action@v5
         with:
           context: .
           push: true
-          files: docker-compose.yml
+          file: docker-compose.yml
           tags: tregistry.azurecr.io/ragapp:latest
-
