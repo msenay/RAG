@@ -1,0 +1,30 @@
+name: Build and Push Docker Image to ACR
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  build-and-push:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Login to Azure Container Registry
+        uses: azure/docker-login@v1
+        with:
+          login-server: tregistry.azurecr.io
+          username: ${{ secrets.AZURE_USERNAME }}
+          password: ${{ secrets.AZURE_PASSWORD }}
+
+      - name: Build and Push Docker Compose Images
+        uses: docker/compose-build-push-action@v2
+        with:
+          context: .
+          push: true
+          files: docker-compose.yml
+          tags: tregistry.azurecr.io/ragapp:latest
+
