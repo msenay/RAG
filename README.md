@@ -62,11 +62,8 @@ docker-compose up --build
 ```
 This will start the FastAPI server, the PostgreSQL database, and the Dramatiq worker.
 Initialize the database:
-After the containers are up and running, initialize the database by running the following command inside the API container:
+Its gonna be done automatically. But you can also run init_db script in bin file.
 
-```bash
-docker exec -it <api-container-name> python -m app.database.init_db
-```
 Usage
 
 1) Uploading and Processing a PDF
