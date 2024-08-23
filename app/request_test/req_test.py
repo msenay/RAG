@@ -30,13 +30,12 @@ def question_answer(document_url, query):
         print(f"Failed to perform query: {response.text}")
 
 if __name__ == "__main__":
-    # # Upload the document and get the document ID
-    # # document_id = upload_document(PDF_URL)
-    #
-    # if document_id:
-    #     # Wait for the document to be processed
-    #     time.sleep(10)  # Adjust sleep time based on processing time
-    #
-    #     # Perform a query on the uploaded document
-    #     question_answer(PDF_URL, "What is the main topic of the document?")
-    question_answer(PDF_URL, "What is the main topic of the document?")
+    # Upload the document and get the document ID
+    document_id = upload_document(PDF_URL)
+
+    if document_id:
+        # Wait for the document to be processed
+        time.sleep(10)  # Adjust sleep time based on processing time
+
+        # Perform a query on the uploaded document
+        question_answer(PDF_URL, "What is the main topic of the document?")
